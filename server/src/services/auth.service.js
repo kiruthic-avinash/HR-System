@@ -26,6 +26,11 @@ async function register({ employeeId, email, password, role }) {
   user.verificationTokenExpires = new Date(Date.now() + VERIFICATION_TTL_MS);
   await user.save();
 
+  // Every account gets a profile shell immediately so directory listings
+  // and profile pages never have to special-case missing profiles.
+  const Profile = require('../models/Profile');
+  await Profile.create({ user: user._id });
+
   const verifyUrl = `${env.clientOrigin}/verify-email?token=${token}`;
   await sendVerificationEmail(user.email, verifyUrl);
 

@@ -9,6 +9,9 @@ import EmployeeLayout from './layouts/EmployeeLayout';
 import AdminLayout from './layouts/AdminLayout';
 import EmployeeDashboard from './pages/employee/Dashboard';
 import AdminDashboard from './pages/admin/Dashboard';
+import EmployeeProfile from './pages/employee/Profile';
+import Directory from './pages/admin/Directory';
+import EmployeeDetail from './pages/admin/EmployeeDetail';
 
 function Landing() {
   const { user, loading } = useAuth();
@@ -38,7 +41,7 @@ export default function App() {
           <Route element={<RoleRoute role="employee" />}>
             <Route path="/app" element={<EmployeeLayout />}>
               <Route index element={<EmployeeDashboard />} />
-              <Route path="profile" element={<ComingSoon title="My Profile" />} />
+              <Route path="profile" element={<EmployeeProfile />} />
               <Route path="attendance" element={<ComingSoon title="Attendance" />} />
               <Route path="leave" element={<ComingSoon title="Leave" />} />
               <Route path="payroll" element={<ComingSoon title="Salary" />} />
@@ -47,7 +50,8 @@ export default function App() {
           <Route element={<RoleRoute role="admin" />}>
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
-              <Route path="employees" element={<ComingSoon title="Employee Directory" />} />
+              <Route path="employees" element={<Directory />} />
+              <Route path="employees/:userId" element={<EmployeeDetail />} />
               <Route path="attendance" element={<ComingSoon title="Attendance Records" />} />
               <Route path="leaves" element={<ComingSoon title="Leave Approvals" />} />
               <Route path="payroll" element={<ComingSoon title="Payroll" />} />

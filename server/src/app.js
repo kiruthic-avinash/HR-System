@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
@@ -17,6 +18,10 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/notifications', require('./routes/notification.routes'));
 app.use('/api/admin', require('./routes/admin.routes'));
+app.use('/api/profiles', require('./routes/profile.routes'));
+
+// Locally stored uploads (disk storage driver)
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 app.use('/api', notFound);
 app.use(errorHandler);
