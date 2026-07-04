@@ -83,7 +83,7 @@ async function adminUpdate(userId, body) {
   const profile = await Profile.findOneAndUpdate(
     { user: userId },
     { $set: set, $setOnInsert: { user: userId } },
-    { new: true, upsert: true }
+    { returnDocument: 'after', upsert: true }
   ).lean();
 
   await notify(userId, {

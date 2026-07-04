@@ -15,7 +15,7 @@ async function checkIn(userId) {
     previous = await Attendance.findOneAndUpdate(
       { user: userId, date: today },
       { $setOnInsert: { checkIn: now, status: 'present' } },
-      { upsert: true, new: false }
+      { upsert: true, returnDocument: 'before' }
     );
   } catch (err) {
     if (err.code === 11000) throw new ApiError(409, 'You have already checked in today');

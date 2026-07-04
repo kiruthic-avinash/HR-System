@@ -1,15 +1,30 @@
 const path = require('path');
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 const env = require('./config/env');
+const sanitizeBody = require('./middleware/sanitize');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
 
 const app = express();
 
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({ origin: env.clientOrigin, credentials: true }));
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
+app.use(sanitizeBody);
+
+// Brute-force protection on the credential surface only.
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: () => env.nodeEnv === 'test',
+});
+app.use('/api/auth', authLimiter);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', uptime: process.uptime() });

@@ -41,7 +41,7 @@ async function getOrCreate(userId) {
   const profile = await Profile.findOneAndUpdate(
     { user: userId },
     { $setOnInsert: { user: userId } },
-    { upsert: true, new: true }
+    { upsert: true, returnDocument: 'after' }
   ).populate('user', 'employeeId email role');
   return profile;
 }
@@ -52,7 +52,7 @@ async function updateOwn(userId, body) {
     throw new ApiError(400, 'No editable fields supplied');
   }
   await getOrCreate(userId);
-  return Profile.findOneAndUpdate({ user: userId }, { $set: set }, { new: true, runValidators: true })
+  return Profile.findOneAndUpdate({ user: userId }, { $set: set }, { returnDocument: 'after', runValidators: true })
     .populate('user', 'employeeId email role');
 }
 
@@ -64,7 +64,7 @@ async function adminUpdate(userId, body) {
   const user = await User.findById(userId);
   if (!user) throw new ApiError(404, 'User not found');
   await getOrCreate(userId);
-  return Profile.findOneAndUpdate({ user: userId }, { $set: set }, { new: true, runValidators: true })
+  return Profile.findOneAndUpdate({ user: userId }, { $set: set }, { returnDocument: 'after', runValidators: true })
     .populate('user', 'employeeId email role');
 }
 
@@ -111,7 +111,7 @@ async function setPicture(userId, file) {
     folder: 'avatars',
   });
   await getOrCreate(userId);
-  return Profile.findOneAndUpdate({ user: userId }, { $set: { profilePictureUrl: url } }, { new: true })
+  return Profile.findOneAndUpdate({ user: userId }, { $set: { profilePictureUrl: url } }, { returnDocument: 'after' })
     .populate('user', 'employeeId email role');
 }
 
@@ -127,7 +127,7 @@ async function addDocument(userId, file, name) {
   return Profile.findOneAndUpdate(
     { user: userId },
     { $push: { documents: { name: name || file.originalname, url } } },
-    { new: true }
+    { returnDocument: 'after' }
   ).populate('user', 'employeeId email role');
 }
 

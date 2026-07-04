@@ -22,7 +22,7 @@ async function markRead(userId, notificationId) {
   const updated = await Notification.findOneAndUpdate(
     { _id: notificationId, user: userId },
     { isRead: true },
-    { new: true }
+    { returnDocument: 'after' }
   ).lean();
   return updated;
 }
