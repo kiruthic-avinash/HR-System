@@ -74,6 +74,31 @@ async function adminGet(userId) {
   return getOrCreate(userId);
 }
 
+async function adminDelete(actorId, userId) {
+  if (String(userId) === String(actorId)) {
+    throw new ApiError(400, 'You cannot delete your own account');
+  }
+  const user = await User.findById(userId);
+  if (!user) throw new ApiError(404, 'User not found');
+
+  const Attendance = require('../models/Attendance');
+  const LeaveRequest = require('../models/LeaveRequest');
+  const Notification = require('../models/Notification');
+
+  // User goes first so login/refresh dies immediately even if a cascade step fails.
+  // Uploaded files (avatar/documents) are left in storage: the storage
+  // abstraction has no remove() and orphaned files are harmless.
+  await User.deleteOne({ _id: user._id });
+  await Promise.all([
+    Profile.deleteOne({ user: user._id }),
+    Attendance.deleteMany({ user: user._id }),
+    LeaveRequest.deleteMany({ user: user._id }),
+    Notification.deleteMany({ user: user._id }),
+  ]);
+
+  return { deleted: { id: user._id, employeeId: user.employeeId, email: user.email } };
+}
+
 async function adminList({ page = 1, limit = 10, search = '' }) {
   const userFilter = {};
   if (search) {
@@ -137,6 +162,7 @@ module.exports = {
   updateOwn,
   adminUpdate,
   adminGet,
+  adminDelete,
   adminList,
   setPicture,
   addDocument,

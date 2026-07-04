@@ -37,4 +37,9 @@ module.exports = {
     const profile = await profileService.adminUpdate(req.params.userId, req.body);
     res.json({ profile });
   }),
+
+  deleteOne: wrap(async (req, res) => {
+    const result = await profileService.adminDelete(req.user.id, req.params.userId);
+    res.json(result);
+  }),
 };

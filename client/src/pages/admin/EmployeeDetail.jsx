@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../../api/axios';
+import { useAuth } from '../../context/AuthContext';
 import { Card, Field, Input, Select, Button, Alert, Spinner, apiError } from '../../components/ui';
 import { Avatar, DocumentsCard } from '../../components/ProfileView';
 
@@ -29,10 +30,14 @@ const emptyForm = (p) => ({
 
 export default function EmployeeDetail() {
   const { userId } = useParams();
+  const navigate = useNavigate();
+  const { user: me } = useAuth();
   const [profile, setProfile] = useState(null);
   const [form, setForm] = useState(null);
   const [msg, setMsg] = useState({ kind: 'info', text: '' });
   const [busy, setBusy] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     api.get(`/profiles/${userId}`).then(({ data }) => {
@@ -48,6 +53,21 @@ export default function EmployeeDetail() {
       ...form,
       [section]: { ...form[section], [key]: isNumber ? Number(e.target.value) : e.target.value },
     });
+
+  const isOwnAccount = String(profile.user?._id || profile.user?.id || '') === String(me?.id || '');
+
+  const deleteAccount = async () => {
+    setDeleting(true);
+    setMsg({ kind: 'info', text: '' });
+    try {
+      await api.delete(`/profiles/${userId}`);
+      navigate('/admin/employees', { replace: true });
+    } catch (err) {
+      setMsg({ kind: 'error', text: apiError(err) });
+      setConfirmDelete(false);
+      setDeleting(false);
+    }
+  };
 
   const save = async (e) => {
     e.preventDefault();
@@ -185,6 +205,37 @@ export default function EmployeeDetail() {
       </form>
 
       <DocumentsCard documents={profile.documents} />
+
+      {!isOwnAccount && (
+        <Card className="border-red-200">
+          <h2 className="mb-1 font-semibold text-red-700">Danger zone</h2>
+          {confirmDelete ? (
+            <div className="space-y-3">
+              <p className="text-sm text-slate-600">
+                This permanently removes {profile.user?.email} and all of their attendance, leave,
+                payroll and notification data. This cannot be undone.
+              </p>
+              <div className="flex gap-2">
+                <Button variant="danger" onClick={deleteAccount} disabled={deleting}>
+                  {deleting ? 'Deleting…' : 'Yes, delete this account'}
+                </Button>
+                <Button variant="secondary" onClick={() => setConfirmDelete(false)} disabled={deleting}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-slate-600">
+                Permanently delete this account and every record tied to it.
+              </p>
+              <Button variant="danger" onClick={() => setConfirmDelete(true)}>
+                Delete this account
+              </Button>
+            </div>
+          )}
+        </Card>
+      )}
     </div>
   );
 }

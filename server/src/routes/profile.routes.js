@@ -16,5 +16,6 @@ router.post('/me/documents', uploadDocument, controller.uploadDocument);
 router.get('/', rbac('admin'), controller.list);
 router.get('/:userId', rbac('admin'), controller.getOne);
 router.put('/:userId', rbac('admin'), controller.updateOne);
+router.delete('/:userId', rbac('admin'), controller.deleteOne);
 
 module.exports = router;

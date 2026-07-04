@@ -14,6 +14,7 @@ describe('RBAC boundary', () => {
     ['get', '/api/profiles'],
     ['get', '/api/profiles/000000000000000000000000'],
     ['put', '/api/profiles/000000000000000000000000'],
+    ['delete', '/api/profiles/000000000000000000000000'],
     ['get', '/api/attendance'],
     ['post', '/api/attendance/mark-absentees'],
     ['patch', '/api/attendance/000000000000000000000000'],
