@@ -19,6 +19,7 @@ app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/notifications', require('./routes/notification.routes'));
 app.use('/api/admin', require('./routes/admin.routes'));
 app.use('/api/profiles', require('./routes/profile.routes'));
+app.use('/api/attendance', require('./routes/attendance.routes'));
 
 // Locally stored uploads (disk storage driver)
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));

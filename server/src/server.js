@@ -8,6 +8,7 @@ async function main() {
     const { seedUsers } = require('./seed');
     await seedUsers();
   }
+  require('./jobs/attendance.job').scheduleAttendanceJobs();
   app.listen(env.port, () => {
     console.log(`HR-System API listening on http://localhost:${env.port}`);
   });

@@ -12,6 +12,8 @@ import AdminDashboard from './pages/admin/Dashboard';
 import EmployeeProfile from './pages/employee/Profile';
 import Directory from './pages/admin/Directory';
 import EmployeeDetail from './pages/admin/EmployeeDetail';
+import EmployeeAttendance from './pages/employee/Attendance';
+import AttendanceRecords from './pages/admin/AttendanceRecords';
 
 function Landing() {
   const { user, loading } = useAuth();
@@ -42,7 +44,7 @@ export default function App() {
             <Route path="/app" element={<EmployeeLayout />}>
               <Route index element={<EmployeeDashboard />} />
               <Route path="profile" element={<EmployeeProfile />} />
-              <Route path="attendance" element={<ComingSoon title="Attendance" />} />
+              <Route path="attendance" element={<EmployeeAttendance />} />
               <Route path="leave" element={<ComingSoon title="Leave" />} />
               <Route path="payroll" element={<ComingSoon title="Salary" />} />
             </Route>
@@ -52,7 +54,7 @@ export default function App() {
               <Route index element={<AdminDashboard />} />
               <Route path="employees" element={<Directory />} />
               <Route path="employees/:userId" element={<EmployeeDetail />} />
-              <Route path="attendance" element={<ComingSoon title="Attendance Records" />} />
+              <Route path="attendance" element={<AttendanceRecords />} />
               <Route path="leaves" element={<ComingSoon title="Leave Approvals" />} />
               <Route path="payroll" element={<ComingSoon title="Payroll" />} />
             </Route>
