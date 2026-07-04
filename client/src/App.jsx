@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth, homePathFor } from './context/AuthContext';
 import { ProtectedRoute, RoleRoute } from './routes/guards';
-import { Spinner, Card } from './components/ui';
+import { Spinner } from './components/ui';
 import SignIn from './pages/auth/SignIn';
 import SignUp from './pages/auth/SignUp';
 import VerifyEmail from './pages/auth/VerifyEmail';
@@ -16,20 +16,13 @@ import EmployeeAttendance from './pages/employee/Attendance';
 import AttendanceRecords from './pages/admin/AttendanceRecords';
 import EmployeeLeave from './pages/employee/Leave';
 import LeaveApprovals from './pages/admin/LeaveApprovals';
+import EmployeePayroll from './pages/employee/Payroll';
+import AdminPayroll from './pages/admin/Payroll';
 
 function Landing() {
   const { user, loading } = useAuth();
   if (loading) return <Spinner />;
   return <Navigate to={user ? homePathFor(user) : '/login'} replace />;
-}
-
-function ComingSoon({ title }) {
-  return (
-    <Card>
-      <h1 className="font-semibold text-slate-700">{title}</h1>
-      <p className="mt-1 text-sm text-slate-500">This module arrives in an upcoming sprint.</p>
-    </Card>
-  );
 }
 
 export default function App() {
@@ -48,7 +41,7 @@ export default function App() {
               <Route path="profile" element={<EmployeeProfile />} />
               <Route path="attendance" element={<EmployeeAttendance />} />
               <Route path="leave" element={<EmployeeLeave />} />
-              <Route path="payroll" element={<ComingSoon title="Salary" />} />
+              <Route path="payroll" element={<EmployeePayroll />} />
             </Route>
           </Route>
           <Route element={<RoleRoute role="admin" />}>
@@ -58,7 +51,7 @@ export default function App() {
               <Route path="employees/:userId" element={<EmployeeDetail />} />
               <Route path="attendance" element={<AttendanceRecords />} />
               <Route path="leaves" element={<LeaveApprovals />} />
-              <Route path="payroll" element={<ComingSoon title="Payroll" />} />
+              <Route path="payroll" element={<AdminPayroll />} />
             </Route>
           </Route>
         </Route>
