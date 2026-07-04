@@ -11,6 +11,11 @@ function getTransporter() {
         port: env.smtp.port,
         secure: env.smtp.port === 465,
         auth: env.smtp.user ? { user: env.smtp.user, pass: env.smtp.pass } : undefined,
+        // Fail fast if the SMTP host is unreachable; nodemailer's defaults
+        // can hang a registration request for up to 2 minutes.
+        connectionTimeout: 10_000,
+        greetingTimeout: 10_000,
+        socketTimeout: 15_000,
       });
     } else {
       // Dev fallback: no SMTP configured - emails are logged, not sent.
@@ -34,4 +39,17 @@ async function sendVerificationEmail(to, verifyUrl) {
   return info;
 }
 
-module.exports = { sendVerificationEmail };
+async function verifyMailer() {
+  if (!env.smtp.host) {
+    console.log('[mailer] SMTP_HOST not set - verification links will be logged to the console');
+    return;
+  }
+  try {
+    await getTransporter().verify();
+    console.log(`[mailer] SMTP connection to ${env.smtp.host}:${env.smtp.port} verified`);
+  } catch (err) {
+    console.error(`[mailer] SMTP verification failed (${env.smtp.host}:${env.smtp.port}): ${err.message}`);
+  }
+}
+
+module.exports = { sendVerificationEmail, verifyMailer };

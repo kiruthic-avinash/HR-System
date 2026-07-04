@@ -56,7 +56,17 @@ On first boot in development the server seeds demo accounts:
 | Employee | `alice@hr-system.local` | `Alice@123` |
 | Employee | `bob@hr-system.local` | `Bob@12345` |
 
-Email verification links for new sign-ups are printed to the server console when no SMTP host is configured (set `SMTP_*` in `.env` to send real mail via Nodemailer).
+Email verification links for new sign-ups are printed to the server console when no SMTP host is configured. To send real mail via Gmail: enable 2-Step Verification, create an app password at <https://myaccount.google.com/apppasswords>, and set in `server/.env`:
+
+```
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_USER=you@gmail.com
+SMTP_PASS=<16-char app password>
+MAIL_FROM="HR System <you@gmail.com>"   # must match SMTP_USER - Gmail rewrites the From header
+```
+
+The server verifies the SMTP connection at boot and logs the result; if a send fails during sign-up, the registration is rolled back so the email/employee ID stay free for a retry.
 
 ## Tests
 

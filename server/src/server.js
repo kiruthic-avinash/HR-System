@@ -9,6 +9,7 @@ async function main() {
     await seedUsers();
   }
   require('./jobs/attendance.job').scheduleAttendanceJobs();
+  await require('./utils/mailer').verifyMailer();
   app.listen(env.port, () => {
     console.log(`HR-System API listening on http://localhost:${env.port}`);
   });

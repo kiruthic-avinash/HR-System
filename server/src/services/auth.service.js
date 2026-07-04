@@ -32,7 +32,16 @@ async function register({ employeeId, email, password, role }) {
   await Profile.create({ user: user._id });
 
   const verifyUrl = `${env.clientOrigin}/verify-email?token=${token}`;
-  await sendVerificationEmail(user.email, verifyUrl);
+  try {
+    await sendVerificationEmail(user.email, verifyUrl);
+  } catch (err) {
+    // Roll back so the email/employeeId stay free for a retry; otherwise the
+    // half-registered account could never verify or re-register.
+    await Profile.deleteOne({ user: user._id });
+    await User.deleteOne({ _id: user._id });
+    console.error(`[auth] Verification email to ${user.email} failed: ${err.message}`);
+    throw new ApiError(502, 'Could not send the verification email. Please try again.');
+  }
 
   return user.toSafeJSON();
 }
