@@ -8,7 +8,7 @@ A Human Resource Management System (HRMS) on the MERN stack: **MongoDB · Expres
 |---|---|---|
 | **Auth** | Sign-up (Employee ID, email, password, role), mandatory email verification, sign-in with role-based redirect | Same, with `admin` role |
 | **Dashboard** | Quick-access cards (Profile, Attendance, Leave, Salary) + recent-activity notifications | Live summary tiles (headcount, present today, pending leaves) |
-| **Profile** | View all own details; edit contact fields + profile picture; upload documents (PDF/image, 5 MB) | Searchable paginated directory; edit *all* fields of any profile |
+| **Profile** | View all own details; edit contact fields + profile picture; upload documents (PDF/image, 5 MB) | Searchable paginated directory; edit *all* fields of any profile; delete any account (employee or admin, never their own) with cascade over attendance/leave/notification data |
 | **Attendance** | Check-in / check-out (double-click safe), own daily/weekly history | Master view with date/status filters, corrections, absentee sweep (auto at 23:55 + manual trigger) |
 | **Leave** | Request (paid/sick/unpaid) with date range + remarks, monthly calendar with state colors, cancel pending | Approval queue, approve/reject with feedback comment; approval writes `leave` attendance records for the range |
 | **Payroll** | Strictly read-only salary breakdown (no write route exists) | Full read/write of every salary structure |
@@ -74,7 +74,7 @@ The server verifies the SMTP connection at boot and logs the result; if a send f
 cd server && npm test
 ```
 
-44 integration tests (Jest + Supertest + in-memory MongoDB) covering the auth flow, an RBAC 403/401 matrix over every admin endpoint, attendance check-in atomicity, the leave→attendance sync loop, payroll write-denial, and Mongo operator-injection sanitisation.
+50 integration tests (Jest + Supertest + in-memory MongoDB) covering the auth flow, an RBAC 403/401 matrix over every admin endpoint, attendance check-in atomicity, the leave→attendance sync loop, payroll write-denial, account deletion (cascade, self-delete block), and Mongo operator-injection sanitisation.
 
 ## Security
 
@@ -82,6 +82,7 @@ cd server && npm test
 - Rotating refresh tokens in an `httpOnly` cookie scoped to `/api/auth`
 - helmet, CORS origin whitelist, rate limiting on `/api/auth/*`, body sanitisation against `$`/dot operator injection
 - Upload hardening: MIME whitelist, 5 MB cap, randomized filenames
+- Admins cannot delete their own account, so at least one admin always remains
 - Central error handler; stack traces suppressed in production
 
 ## Deployment notes
