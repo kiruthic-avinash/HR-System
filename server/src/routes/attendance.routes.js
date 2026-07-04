@@ -34,12 +34,29 @@ router.get(
   })
 );
 
+router.get(
+  '/me/leave-summary',
+  wrap(async (req, res) => {
+    const result = await attendanceService.monthlyLeaveSummary(req.user.id);
+    res.json(result);
+  })
+);
+
 // Admin: workforce-wide visibility and corrections.
 router.get(
   '/',
   rbac('admin'),
   wrap(async (req, res) => {
     const result = await attendanceService.adminList(req.query);
+    res.json(result);
+  })
+);
+
+router.get(
+  '/leave-summary/:userId',
+  rbac('admin'),
+  wrap(async (req, res) => {
+    const result = await attendanceService.monthlyLeaveSummary(req.params.userId);
     res.json(result);
   })
 );

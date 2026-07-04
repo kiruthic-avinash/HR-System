@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Attendance = require('../models/Attendance');
 const User = require('../models/User');
 const { ApiError } = require('../middleware/errorHandler');
@@ -86,6 +87,27 @@ async function adminUpdate(id, { status, checkIn, checkOut }) {
   return record.toObject();
 }
 
+// Month-by-month count of leave days. Attendance is the single source of
+// truth for day states (approval materializes one 'leave' row per day), so a
+// leave range spanning two months lands in the right buckets automatically.
+async function monthlyLeaveSummary(userId) {
+  if (!mongoose.isValidObjectId(userId)) throw new ApiError(404, 'User not found');
+  const rows = await Attendance.aggregate([
+    { $match: { user: new mongoose.Types.ObjectId(userId), status: 'leave' } },
+    {
+      $group: {
+        _id: {
+          year: { $year: { date: '$date', timezone: 'UTC' } },
+          month: { $month: { date: '$date', timezone: 'UTC' } },
+        },
+        days: { $sum: 1 },
+      },
+    },
+    { $sort: { '_id.year': -1, '_id.month': -1 } },
+  ]);
+  return { months: rows.map((r) => ({ year: r._id.year, month: r._id.month, days: r.days })) };
+}
+
 // End-of-day sweep: everyone without a record for the day (present, leave or
 // otherwise) gets a single bulk-inserted 'absent' row.
 async function markAbsentees(forDate = new Date()) {
@@ -104,4 +126,12 @@ async function markAbsentees(forDate = new Date()) {
   return { marked: missing.length, date: day };
 }
 
-module.exports = { checkIn, checkOut, listOwn, adminList, adminUpdate, markAbsentees };
+module.exports = {
+  checkIn,
+  checkOut,
+  listOwn,
+  adminList,
+  adminUpdate,
+  monthlyLeaveSummary,
+  markAbsentees,
+};

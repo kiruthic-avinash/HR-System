@@ -4,6 +4,7 @@ import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import { Card, Field, Input, Select, Button, Alert, Spinner, apiError } from '../../components/ui';
 import { Avatar, DocumentsCard } from '../../components/ProfileView';
+import MonthlyLeaveTable from '../../components/MonthlyLeaveTable';
 
 const emptyForm = (p) => ({
   personal: {
@@ -38,12 +39,17 @@ export default function EmployeeDetail() {
   const [busy, setBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [leaveMonths, setLeaveMonths] = useState([]);
 
   useEffect(() => {
     api.get(`/profiles/${userId}`).then(({ data }) => {
       setProfile(data.profile);
       setForm(emptyForm(data.profile));
     });
+    api
+      .get(`/attendance/leave-summary/${userId}`)
+      .then(({ data }) => setLeaveMonths(data.months))
+      .catch(() => {});
   }, [userId]);
 
   if (!profile || !form) return <Spinner />;
@@ -205,6 +211,8 @@ export default function EmployeeDetail() {
       </form>
 
       <DocumentsCard documents={profile.documents} />
+
+      <MonthlyLeaveTable title="Leaves by month" months={leaveMonths} />
 
       {!isOwnAccount && (
         <Card className="border-red-200">

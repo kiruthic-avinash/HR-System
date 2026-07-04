@@ -3,6 +3,7 @@ import api from '../../api/axios';
 import { Card, Field, Input, Select, Button, Alert, apiError } from '../../components/ui';
 import StatusBadge from '../../components/StatusBadge';
 import LeaveCalendar from '../../components/LeaveCalendar';
+import MonthlyLeaveTable from '../../components/MonthlyLeaveTable';
 
 const isoDay = (d) => d.toISOString().slice(0, 10);
 const fmt = (d) => new Date(d).toLocaleDateString();
@@ -11,6 +12,7 @@ export default function EmployeeLeave() {
   const [month, setMonth] = useState(new Date());
   const [monthLeaves, setMonthLeaves] = useState([]);
   const [history, setHistory] = useState([]);
+  const [leaveMonths, setLeaveMonths] = useState([]);
   const [form, setForm] = useState({ type: 'paid', startDate: '', endDate: '', remarks: '' });
   const [msg, setMsg] = useState({ kind: 'info', text: '' });
   const [busy, setBusy] = useState(false);
@@ -27,12 +29,18 @@ export default function EmployeeLeave() {
     setHistory(data.requests);
   }, []);
 
+  const loadSummary = useCallback(async () => {
+    const { data } = await api.get('/attendance/me/leave-summary');
+    setLeaveMonths(data.months);
+  }, []);
+
   useEffect(() => {
     loadMonth().catch(() => {});
   }, [loadMonth]);
   useEffect(() => {
     loadHistory().catch(() => {});
-  }, [loadHistory]);
+    loadSummary().catch(() => {});
+  }, [loadHistory, loadSummary]);
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
@@ -145,6 +153,8 @@ export default function EmployeeLeave() {
           </tbody>
         </table>
       </Card>
+
+      <MonthlyLeaveTable title="Your leaves by month" months={leaveMonths} />
     </div>
   );
 }
