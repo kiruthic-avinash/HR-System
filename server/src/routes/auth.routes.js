@@ -32,6 +32,12 @@ router.get(
 );
 
 router.post(
+  '/resend-verification',
+  validate([body('email').isEmail().withMessage('A valid email is required').normalizeEmail()]),
+  controller.resendVerification
+);
+
+router.post(
   '/login',
   validate([
     body('email').isEmail().withMessage('A valid email is required').normalizeEmail(),

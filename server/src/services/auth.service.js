@@ -10,7 +10,7 @@ const {
   randomToken,
 } = require('../utils/jwt');
 
-const VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000;
+const VERIFICATION_TTL_MS = 5 * 60 * 1000;
 
 async function register({ employeeId, email, password, role }) {
   const existing = await User.findOne({ $or: [{ email }, { employeeId: employeeId.toUpperCase() }] });
@@ -53,11 +53,27 @@ async function verifyEmail(token) {
   }).select('+verificationTokenHash +verificationTokenExpires');
   if (!user) throw new ApiError(400, 'Verification link is invalid or has expired');
 
+  // The token stays valid until it expires so repeat clicks on the same link
+  // (browser prefetch, React StrictMode double-fire, user re-opening the mail)
+  // keep succeeding instead of 400ing after the first hit.
   user.isEmailVerified = true;
-  user.verificationTokenHash = undefined;
-  user.verificationTokenExpires = undefined;
   await user.save();
   return user.toSafeJSON();
+}
+
+async function resendVerification(email) {
+  const user = await User.findOne({ email });
+  // Stay silent for unknown or already-verified emails so this public
+  // endpoint can't be used to probe which addresses have accounts.
+  if (!user || user.isEmailVerified) return;
+
+  const token = randomToken();
+  user.verificationTokenHash = sha256(token);
+  user.verificationTokenExpires = new Date(Date.now() + VERIFICATION_TTL_MS);
+  await user.save();
+
+  const verifyUrl = `${env.clientOrigin}/verify-email?token=${token}`;
+  await sendVerificationEmail(user.email, verifyUrl);
 }
 
 async function login({ email, password }) {
@@ -118,4 +134,4 @@ async function getMe(userId) {
   return user.toSafeJSON();
 }
 
-module.exports = { register, verifyEmail, login, refresh, logout, getMe };
+module.exports = { register, verifyEmail, resendVerification, login, refresh, logout, getMe };

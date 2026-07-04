@@ -32,6 +32,16 @@ async function verifyEmail(req, res, next) {
   }
 }
 
+async function resendVerification(req, res, next) {
+  try {
+    await authService.resendVerification(req.body.email);
+    // Generic response regardless of whether the account exists (no enumeration).
+    res.json({ message: 'If an unverified account exists for this email, a new link has been sent.' });
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function login(req, res, next) {
   try {
     const { accessToken, refreshToken, user } = await authService.login(req.body);
@@ -73,4 +83,4 @@ async function me(req, res, next) {
   }
 }
 
-module.exports = { register, verifyEmail, login, refresh, logout, me };
+module.exports = { register, verifyEmail, resendVerification, login, refresh, logout, me };

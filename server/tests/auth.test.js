@@ -6,6 +6,7 @@ jest.mock('../src/utils/mailer', () => ({
 }));
 
 const { app, request } = require('./helpers');
+const User = require('../src/models/User');
 
 describe('auth flow', () => {
   const creds = {
@@ -51,10 +52,62 @@ describe('auth flow', () => {
     expect(login.body.user.role).toBe('employee');
   });
 
-  it('rejects a reused verification token', async () => {
+  it('keeps the link valid for repeat clicks within the window', async () => {
     const token = new URL(lastVerifyUrl).searchParams.get('token');
     const res = await request(app).get(`/api/auth/verify-email?token=${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body.user.isEmailVerified).toBe(true);
+  });
+
+  it('rejects the link after it expires', async () => {
+    const token = new URL(lastVerifyUrl).searchParams.get('token');
+    await User.updateOne(
+      { email: creds.email },
+      { verificationTokenExpires: new Date(Date.now() - 1000) }
+    );
+    const res = await request(app).get(`/api/auth/verify-email?token=${token}`);
     expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/invalid or has expired/);
+  });
+
+  it('resends a fresh link for an unverified account', async () => {
+    const stale = {
+      employeeId: 'EMP910',
+      email: 'resend@test.local',
+      password: 'Str0ngPass',
+      role: 'employee',
+    };
+    await request(app).post('/api/auth/register').send(stale);
+    const firstUrl = lastVerifyUrl;
+    await User.updateOne(
+      { email: stale.email },
+      { verificationTokenExpires: new Date(Date.now() - 1000) }
+    );
+
+    const resend = await request(app)
+      .post('/api/auth/resend-verification')
+      .send({ email: stale.email });
+    expect(resend.status).toBe(200);
+    expect(lastVerifyUrl).not.toBe(firstUrl);
+
+    const token = new URL(lastVerifyUrl).searchParams.get('token');
+    const verify = await request(app).get(`/api/auth/verify-email?token=${token}`);
+    expect(verify.status).toBe(200);
+
+    const login = await request(app)
+      .post('/api/auth/login')
+      .send({ email: stale.email, password: stale.password });
+    expect(login.status).toBe(200);
+  });
+
+  it('returns the same generic response for unknown emails on resend', async () => {
+    const before = lastVerifyUrl;
+    const res = await request(app)
+      .post('/api/auth/resend-verification')
+      .send({ email: 'nobody@test.local' });
+    expect(res.status).toBe(200);
+    expect(res.body.message).toMatch(/If an unverified account exists/);
+    expect(lastVerifyUrl).toBe(before); // no mail sent
   });
 
   it('rejects duplicate registration', async () => {

@@ -30,8 +30,8 @@ async function sendVerificationEmail(to, verifyUrl) {
     from: env.smtp.from,
     to,
     subject: 'Verify your HR System account',
-    text: `Welcome to HR System!\n\nPlease verify your email by opening this link:\n${verifyUrl}\n\nThe link expires in 24 hours.`,
-    html: `<p>Welcome to HR System!</p><p>Please verify your email by clicking the link below:</p><p><a href="${verifyUrl}">Verify my account</a></p><p>The link expires in 24 hours.</p>`,
+    text: `Welcome to HR System!\n\nPlease verify your email by opening this link:\n${verifyUrl}\n\nThe link expires in 5 minutes.`,
+    html: `<p>Welcome to HR System!</p><p>Please verify your email by clicking the link below:</p><p><a href="${verifyUrl}">Verify my account</a></p><p>The link expires in 5 minutes.</p>`,
   });
   if (!env.smtp.host) {
     console.log(`[mailer] Verification link for ${to}: ${verifyUrl}`);
