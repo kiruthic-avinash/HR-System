@@ -1,10 +1,14 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth, homePathFor } from './context/AuthContext';
 import { ProtectedRoute, RoleRoute } from './routes/guards';
-import { Spinner } from './components/ui';
+import { Spinner, Card } from './components/ui';
 import SignIn from './pages/auth/SignIn';
 import SignUp from './pages/auth/SignUp';
 import VerifyEmail from './pages/auth/VerifyEmail';
+import EmployeeLayout from './layouts/EmployeeLayout';
+import AdminLayout from './layouts/AdminLayout';
+import EmployeeDashboard from './pages/employee/Dashboard';
+import AdminDashboard from './pages/admin/Dashboard';
 
 function Landing() {
   const { user, loading } = useAuth();
@@ -12,11 +16,12 @@ function Landing() {
   return <Navigate to={user ? homePathFor(user) : '/login'} replace />;
 }
 
-function Placeholder({ title }) {
+function ComingSoon({ title }) {
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <h1 className="text-xl font-semibold text-slate-600">{title}</h1>
-    </div>
+    <Card>
+      <h1 className="font-semibold text-slate-700">{title}</h1>
+      <p className="mt-1 text-sm text-slate-500">This module arrives in an upcoming sprint.</p>
+    </Card>
   );
 }
 
@@ -31,10 +36,22 @@ export default function App() {
 
         <Route element={<ProtectedRoute />}>
           <Route element={<RoleRoute role="employee" />}>
-            <Route path="/app/*" element={<Placeholder title="Employee dashboard (Sprint 2)" />} />
+            <Route path="/app" element={<EmployeeLayout />}>
+              <Route index element={<EmployeeDashboard />} />
+              <Route path="profile" element={<ComingSoon title="My Profile" />} />
+              <Route path="attendance" element={<ComingSoon title="Attendance" />} />
+              <Route path="leave" element={<ComingSoon title="Leave" />} />
+              <Route path="payroll" element={<ComingSoon title="Salary" />} />
+            </Route>
           </Route>
           <Route element={<RoleRoute role="admin" />}>
-            <Route path="/admin/*" element={<Placeholder title="Admin dashboard (Sprint 2)" />} />
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="employees" element={<ComingSoon title="Employee Directory" />} />
+              <Route path="attendance" element={<ComingSoon title="Attendance Records" />} />
+              <Route path="leaves" element={<ComingSoon title="Leave Approvals" />} />
+              <Route path="payroll" element={<ComingSoon title="Payroll" />} />
+            </Route>
           </Route>
         </Route>
 
