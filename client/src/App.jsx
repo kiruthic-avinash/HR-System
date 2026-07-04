@@ -14,6 +14,8 @@ import Directory from './pages/admin/Directory';
 import EmployeeDetail from './pages/admin/EmployeeDetail';
 import EmployeeAttendance from './pages/employee/Attendance';
 import AttendanceRecords from './pages/admin/AttendanceRecords';
+import EmployeeLeave from './pages/employee/Leave';
+import LeaveApprovals from './pages/admin/LeaveApprovals';
 
 function Landing() {
   const { user, loading } = useAuth();
@@ -45,7 +47,7 @@ export default function App() {
               <Route index element={<EmployeeDashboard />} />
               <Route path="profile" element={<EmployeeProfile />} />
               <Route path="attendance" element={<EmployeeAttendance />} />
-              <Route path="leave" element={<ComingSoon title="Leave" />} />
+              <Route path="leave" element={<EmployeeLeave />} />
               <Route path="payroll" element={<ComingSoon title="Salary" />} />
             </Route>
           </Route>
@@ -55,7 +57,7 @@ export default function App() {
               <Route path="employees" element={<Directory />} />
               <Route path="employees/:userId" element={<EmployeeDetail />} />
               <Route path="attendance" element={<AttendanceRecords />} />
-              <Route path="leaves" element={<ComingSoon title="Leave Approvals" />} />
+              <Route path="leaves" element={<LeaveApprovals />} />
               <Route path="payroll" element={<ComingSoon title="Payroll" />} />
             </Route>
           </Route>
